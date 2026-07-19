@@ -39,7 +39,7 @@ android {
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
         }
-        main {
+        production {
             dimension "environment"
         }
     }

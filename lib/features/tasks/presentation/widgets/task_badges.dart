@@ -26,11 +26,11 @@ class PriorityBadge extends StatelessWidget {
   (Color, Color) _colors(BuildContext context, TaskPriority p) {
     switch (p) {
       case TaskPriority.high:
-        return (Colors.red.withValues(alpha: 0.12), Colors.red.shade700);
+        return (Colors.red.withOpacity( 0.12), Colors.red.shade700);
       case TaskPriority.medium:
-        return (Colors.orange.withValues(alpha: 0.12), Colors.orange.shade800);
+        return (Colors.orange.withOpacity( 0.12), Colors.orange.shade800);
       case TaskPriority.low:
-        return (Colors.green.withValues(alpha: 0.12), Colors.green.shade700);
+        return (Colors.green.withOpacity( 0.12), Colors.green.shade700);
     }
   }
 }
