@@ -7,23 +7,27 @@ import 'core/theme/app_theme.dart';
 /// placeholder home confirming the scaffold is ready; feature routes are added
 /// during stage-by-stage development.
 class TeamWorkspaceApp extends StatelessWidget {
-  const TeamWorkspaceApp({super.key});
+  const TeamWorkspaceApp({super.key, this.flavor = 'main'});
+
+  final String flavor;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: AppConstants.appName,
+      title: '${AppConstants.appName} (${flavor.toUpperCase()})',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      home: const _SetupHomePage(),
+      home: _SetupHomePage(flavor: flavor),
     );
   }
 }
 
 class _SetupHomePage extends StatelessWidget {
-  const _SetupHomePage();
+  const _SetupHomePage({required this.flavor});
+
+  final String flavor;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +49,11 @@ class _SetupHomePage extends StatelessWidget {
                 'Features are wired in stage by stage.',
                 textAlign: TextAlign.center,
                 style: text.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Flavor: ${flavor.toUpperCase()}',
+                style: text.labelLarge,
               ),
             ],
           ),
