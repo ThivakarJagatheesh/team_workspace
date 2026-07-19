@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../constants/app_constants.dart';
 
@@ -6,19 +7,11 @@ import '../constants/app_constants.dart';
 /// data sources stay thin.
 class DioClient {
   DioClient() : dio = Dio(_baseOptions) {
-    dio.interceptors.add(
-      LogInterceptor(
-        requestBody: true,
-        responseBody: false,
-        logPrint: (obj) {
-          // ignore: avoid_print
-          assert(() {
-            // Only logs in debug builds.
-            return true;
-          }());
-        },
-      ),
-    );
+    if (kDebugMode) {
+      dio.interceptors.add(
+        LogInterceptor(requestBody: true, responseBody: false),
+      );
+    }
   }
 
   final Dio dio;
