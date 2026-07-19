@@ -22,6 +22,10 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<TasksFetched>(_onFetched, transformer: droppable());
     on<TasksRefreshed>(_onRefreshed, transformer: droppable());
     on<TaskStatusToggled>(_onStatusToggled);
+    on<TaskInserted>(_onInserted);
+    on<TaskUpdated>(_onUpdated);
+    on<TaskSearchChanged>(_onSearchChanged);
+    on<TaskFilterChanged>(_onFilterChanged);
   }
 
   final GetTasks _getTasks;
@@ -83,6 +87,30 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
 
   List<TaskEntity> _replace(List<TaskEntity> tasks, TaskEntity t) =>
       tasks.map((e) => e.id == t.id ? t : e).toList();
+
+  void _onInserted(TaskInserted event, Emitter<TaskState> emit) {
+    emit(
+      state.copyWith(
+        status: TaskListStatus.success,
+        tasks: [event.task, ...state.tasks],
+      ),
+    );
+  }
+
+  void _onUpdated(TaskUpdated event, Emitter<TaskState> emit) {
+    emit(state.copyWith(tasks: _replace(state.tasks, event.task)));
+  }
+
+  void _onSearchChanged(TaskSearchChanged event, Emitter<TaskState> emit) {
+    emit(state.copyWith(query: event.query));
+  }
+
+  void _onFilterChanged(TaskFilterChanged event, Emitter<TaskState> emit) {
+    emit(state.copyWith(
+      statusFilter: event.status,
+      priorityFilter: event.priority,
+    ));
+  }
 
   Future<void> _onRefreshed(
     TasksRefreshed event,

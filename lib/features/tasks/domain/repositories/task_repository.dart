@@ -17,4 +17,13 @@ abstract class TaskRepository {
   /// Persist changes to a task (status toggle in Stage 3, full edit in Stage 5)
   /// and mirror them into the local cache. Returns the updated task.
   Future<Either<Failure, TaskEntity>> updateTask(TaskEntity task);
+
+  /// Create a task. The implementation assigns an id and caches it. Returns the
+  /// created task (with id + defaults filled in).
+  Future<Either<Failure, TaskEntity>> createTask({
+    required String title,
+    required String description,
+    required TaskPriority priority,
+    required DateTime dueDate,
+  });
 }

@@ -2,11 +2,12 @@ import 'bootstrap.dart';
 import 'core/config/flavor.dart';
 import 'core/constants/app_constants.dart';
 
-/// Dev flavor entrypoint: `flutter run -t lib/main_dev.dart`.
+/// Prod flavor entrypoint: `flutter run -t lib/main_prod.dart --release`.
 Future<void> main() async {
   FlavorConfig(
-    flavor: Flavor.dev,
-    name: 'DEV',
+    flavor: Flavor.prod,
+    name: 'PROD',
+    // Point this at the production API. Falls back to the demo base URL.
     baseUrl: AppConstants.baseUrl,
   );
   await bootstrap();

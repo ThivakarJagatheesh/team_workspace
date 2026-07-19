@@ -9,6 +9,7 @@ import '../models/task_model.dart';
 abstract class TaskRemoteDataSource {
   Future<List<TaskModel>> getTasks({required int page, required int limit});
   Future<TaskModel> updateTask(TaskModel task);
+  Future<TaskModel> createTask(TaskModel task);
 }
 
 class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
@@ -51,6 +52,23 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       return task;
     } on DioException catch (e) {
       throw _mapDio(e, 'Failed to update task');
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<TaskModel> createTask(TaskModel task) async {
+    try {
+      await _client.dio.post<Map<String, dynamic>>(
+        AppConstants.tasksEndpoint,
+        data: task.toJson(),
+      );
+      // Demo API returns a fresh id but doesn't persist; we keep our local id
+      // so the created task is stable across reloads.
+      return task;
+    } on DioException catch (e) {
+      throw _mapDio(e, 'Failed to create task');
     } catch (_) {
       throw ServerException();
     }

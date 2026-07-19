@@ -15,12 +15,17 @@ import '../../features/auth/domain/usecases/logout.dart';
 import '../../features/auth/domain/usecases/sign_up.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/tasks/data/datasources/task_local_data_source.dart';
+import '../../features/tasks/data/datasources/task_outbox_data_source.dart';
 import '../../features/tasks/data/datasources/task_remote_data_source.dart';
 import '../../features/tasks/data/repositories/task_repository_impl.dart';
+import '../../features/tasks/data/sync/task_sync_service.dart';
 import '../../features/tasks/domain/repositories/task_repository.dart';
+import '../../features/tasks/domain/usecases/create_task.dart';
 import '../../features/tasks/domain/usecases/get_tasks.dart';
 import '../../features/tasks/domain/usecases/update_task.dart';
 import '../../features/tasks/presentation/bloc/task_bloc.dart';
+import '../../features/tasks/presentation/cubit/create_task_cubit.dart';
+import '../../features/tasks/presentation/cubit/edit_task_cubit.dart';
 import '../constants/app_constants.dart';
 import '../network/dio_client.dart';
 import '../network/network_info.dart';
@@ -34,7 +39,9 @@ Future<void> configureDependencies() async {
   sl.registerSingleton<SharedPreferences>(prefs);
 
   final tasksBox = await Hive.openBox<dynamic>(AppConstants.tasksBox);
-  sl.registerSingleton<Box<dynamic>>(tasksBox);
+  final outboxBox = await Hive.openBox<dynamic>(AppConstants.outboxBox);
+  sl.registerSingleton<Box<dynamic>>(tasksBox, instanceName: 'tasksBox');
+  sl.registerSingleton<Box<dynamic>>(outboxBox, instanceName: 'outboxBox');
 
   sl.registerLazySingleton<Connectivity>(Connectivity.new);
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
@@ -85,18 +92,34 @@ void _registerTasks() {
     () => TaskRemoteDataSourceImpl(sl()),
   );
   sl.registerLazySingleton<TaskLocalDataSource>(
-    () => TaskLocalDataSourceImpl(sl()),
+    () => TaskLocalDataSourceImpl(sl(instanceName: 'tasksBox')),
+  );
+  sl.registerLazySingleton<TaskOutboxDataSource>(
+    () => TaskOutboxDataSourceImpl(sl(instanceName: 'outboxBox')),
   );
 
   // Repository
   sl.registerLazySingleton<TaskRepository>(
-    () => TaskRepositoryImpl(remote: sl(), local: sl(), networkInfo: sl()),
+    () => TaskRepositoryImpl(
+      remote: sl(),
+      local: sl(),
+      outbox: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  // Offline sync service
+  sl.registerLazySingleton<TaskSyncService>(
+    () => TaskSyncService(networkInfo: sl(), outbox: sl(), remote: sl()),
   );
 
   // Use cases
   sl.registerLazySingleton(() => GetTasks(sl()));
   sl.registerLazySingleton(() => UpdateTask(sl()));
+  sl.registerLazySingleton(() => CreateTask(sl()));
 
-  // Bloc
+  // Bloc / Cubit
   sl.registerFactory(() => TaskBloc(getTasks: sl(), updateTask: sl()));
+  sl.registerFactory(() => CreateTaskCubit(sl()));
+  sl.registerFactory(() => EditTaskCubit(sl()));
 }

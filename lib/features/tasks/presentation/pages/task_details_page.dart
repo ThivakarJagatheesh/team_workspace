@@ -5,6 +5,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/task_entity.dart';
 import '../bloc/task_bloc.dart';
 import '../widgets/task_badges.dart';
+import 'edit_task_page.dart';
 
 /// Full task view. Reads the live task from [TaskBloc] by id, so a status
 /// toggle here (or on the list) is reflected immediately and consistently.
@@ -28,7 +29,28 @@ class TaskDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Task details')),
+      appBar: AppBar(
+        title: const Text('Task details'),
+        actions: [
+          BlocBuilder<TaskBloc, TaskState>(
+            builder: (context, state) {
+              final matches = state.tasks.where((t) => t.id == taskId);
+              if (matches.isEmpty) return const SizedBox.shrink();
+              final task = matches.first;
+              return IconButton(
+                tooltip: 'Edit',
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () async {
+                  final bloc = context.read<TaskBloc>();
+                  final updated =
+                      await Navigator.of(context).push(EditTaskPage.route(task));
+                  if (updated != null) bloc.add(TaskUpdated(updated));
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: BlocBuilder<TaskBloc, TaskState>(
         builder: (context, state) {
           final matches = state.tasks.where((t) => t.id == taskId);

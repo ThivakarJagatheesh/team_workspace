@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:team_workspace/core/utils/formatters.dart';
 
+import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/task_entity.dart';
 import 'task_badges.dart';
 

@@ -5,8 +5,11 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/app_state_views.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../domain/entities/task_entity.dart';
 import '../bloc/task_bloc.dart';
 import '../widgets/task_card.dart';
+import '../widgets/task_filter_bar.dart';
+import 'create_task_page.dart';
 import 'task_details_page.dart';
 
 /// Tasks dashboard: paginated, infinite-scroll list with pull-to-refresh and
@@ -51,6 +54,13 @@ class _DashboardViewState extends State<_DashboardView> {
     if (_isNearBottom) context.read<TaskBloc>().add(const TasksFetched());
   }
 
+  Future<void> _openCreate() async {
+    final created = await Navigator.of(context).push(CreateTaskPage.route());
+    if (created != null && mounted) {
+      context.read<TaskBloc>().add(TaskInserted(created));
+    }
+  }
+
   bool get _isNearBottom {
     if (!_scrollController.hasClients) return false;
     final max = _scrollController.position.maxScrollExtent;
@@ -71,36 +81,49 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openCreate,
+        icon: const Icon(Icons.add),
+        label: const Text('New task'),
+      ),
       body: BlocBuilder<TaskBloc, TaskState>(
         builder: (context, state) {
-          switch (state.status) {
-            case TaskListStatus.initial:
-            case TaskListStatus.loading:
-              return const LoadingView(message: 'Loading tasks…');
-
-            case TaskListStatus.failure:
-              if (state.tasks.isEmpty) {
-                return ErrorView(
-                  message: state.errorMessage ?? 'Could not load tasks.',
-                  onRetry: () =>
-                      context.read<TaskBloc>().add(const TasksFetched()),
-                );
-              }
-              // Failure while paginating: keep the list, show a snackbar once.
-              return _TaskList(
-                scrollController: _scrollController,
-                state: state,
-              );
-
-            case TaskListStatus.success:
-              if (state.tasks.isEmpty) {
-                return const EmptyView(message: 'No tasks yet');
-              }
-              return _TaskList(
-                scrollController: _scrollController,
-                state: state,
-              );
+          // First load / hard failure states own the whole screen.
+          if (state.status == TaskListStatus.initial ||
+              state.status == TaskListStatus.loading) {
+            return const LoadingView(message: 'Loading tasks…');
           }
+          if (state.status == TaskListStatus.failure && state.tasks.isEmpty) {
+            return ErrorView(
+              message: state.errorMessage ?? 'Could not load tasks.',
+              onRetry: () =>
+                  context.read<TaskBloc>().add(const TasksFetched()),
+            );
+          }
+          if (state.tasks.isEmpty) {
+            return const EmptyView(message: 'No tasks yet');
+          }
+
+          // Loaded: search/filter bar + the filtered list.
+          final filtered = state.filteredTasks;
+          return Column(
+            children: [
+              const TaskFilterBar(),
+              Expanded(
+                child: filtered.isEmpty
+                    ? const EmptyView(
+                        message: 'No tasks match your search / filters',
+                        icon: Icons.search_off,
+                      )
+                    : _TaskList(
+                        scrollController: _scrollController,
+                        tasks: filtered,
+                        showLoader:
+                            !state.hasReachedMax && !state.hasActiveFilters,
+                      ),
+              ),
+            ],
+          );
         },
       ),
     );
@@ -108,14 +131,18 @@ class _DashboardViewState extends State<_DashboardView> {
 }
 
 class _TaskList extends StatelessWidget {
-  const _TaskList({required this.scrollController, required this.state});
+  const _TaskList({
+    required this.scrollController,
+    required this.tasks,
+    required this.showLoader,
+  });
 
   final ScrollController scrollController;
-  final TaskState state;
+  final List<TaskEntity> tasks;
+  final bool showLoader;
 
   @override
   Widget build(BuildContext context) {
-    final showLoader = !state.hasReachedMax;
     return RefreshIndicator(
       onRefresh: () async {
         context.read<TaskBloc>().add(const TasksRefreshed());
@@ -124,9 +151,9 @@ class _TaskList extends StatelessWidget {
         controller: scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: state.tasks.length + (showLoader ? 1 : 0),
+        itemCount: tasks.length + (showLoader ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= state.tasks.length) {
+          if (index >= tasks.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
@@ -138,7 +165,7 @@ class _TaskList extends StatelessWidget {
               ),
             );
           }
-          final task = state.tasks[index];
+          final task = tasks[index];
           return TaskCard(
             task: task,
             onTap: () => Navigator.of(context)

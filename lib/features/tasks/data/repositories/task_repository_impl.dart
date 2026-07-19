@@ -6,21 +6,31 @@ import '../../../../core/network/network_info.dart';
 import '../../domain/entities/task_entity.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../datasources/task_local_data_source.dart';
+import '../datasources/task_outbox_data_source.dart';
 import '../datasources/task_remote_data_source.dart';
 import '../models/task_model.dart';
 
 /// Remote-first with an offline fallback: page 1 is cached on success and
-/// served from cache when the network is unavailable.
+/// served from cache when the network is unavailable. Offline create/update
+/// operations are queued in the outbox and replayed by [TaskSyncService].
 class TaskRepositoryImpl implements TaskRepository {
   TaskRepositoryImpl({
     required this.remote,
     required this.local,
+    required this.outbox,
     required this.networkInfo,
   });
 
   final TaskRemoteDataSource remote;
   final TaskLocalDataSource local;
+  final TaskOutboxDataSource outbox;
   final NetworkInfo networkInfo;
+
+  int _opSeq = 0;
+  String _opId(int taskId) {
+    _opSeq++;
+    return '${DateTime.now().microsecondsSinceEpoch}_${taskId}_$_opSeq';
+  }
 
   @override
   Future<Either<Failure, List<TaskEntity>>> getTasks({
@@ -52,19 +62,76 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       if (await networkInfo.isConnected) {
         await remote.updateTask(model);
+        await local.upsertTask(model);
+      } else {
+        await _saveOffline(model, OutboxOpType.update);
       }
-      // Always mirror into the cache so the change survives offline and a
-      // restart. (Stage 6 adds an outbox to replay offline edits to the API.)
-      await local.upsertTask(model);
       return Right(task);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on NetworkException {
-      await local.upsertTask(model); // keep the change locally
+      await _saveOffline(model, OutboxOpType.update);
       return Right(task);
     } catch (_) {
       return const Left(ServerFailure('Could not update the task.'));
     }
+  }
+
+  @override
+  Future<Either<Failure, TaskEntity>> createTask({
+    required String title,
+    required String description,
+    required TaskPriority priority,
+    required DateTime dueDate,
+  }) async {
+    final model = TaskModel(
+      id: _nextId(),
+      title: title,
+      description: description,
+      priority: priority,
+      dueDate: dueDate,
+      status: TaskStatus.pending,
+      assignedTo: 'You',
+    );
+    try {
+      if (await networkInfo.isConnected) {
+        await remote.createTask(model);
+        await local.upsertTask(model);
+      } else {
+        await _saveOffline(model, OutboxOpType.create);
+      }
+      return Right(model);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException {
+      await _saveOffline(model, OutboxOpType.create);
+      return Right(model);
+    } catch (_) {
+      return const Left(ServerFailure('Could not create the task.'));
+    }
+  }
+
+  /// Cache the change locally and queue it for replay when back online.
+  Future<void> _saveOffline(TaskModel model, OutboxOpType type) async {
+    await local.upsertTask(model);
+    await outbox.enqueue(
+      OutboxOperation(
+        id: _opId(model.id),
+        type: type,
+        task: model,
+        enqueuedAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+  }
+
+  /// New id above the API's id range (1–200) and any cached id, so created
+  /// tasks never collide with fetched ones.
+  int _nextId() {
+    final cached = local.getCachedTasks();
+    final maxCached = cached.isEmpty
+        ? 0
+        : cached.map((t) => t.id).reduce((a, b) => a > b ? a : b);
+    return (maxCached < 1000 ? 1000 : maxCached) + 1;
   }
 
   /// Serve cached tasks for page 1; otherwise surface [fallback].
