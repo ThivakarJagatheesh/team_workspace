@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/di/injection.dart';
 import '../../../../core/widgets/app_state_views.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/entities/task_entity.dart';
@@ -19,8 +18,8 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<TaskBloc>()..add(const TasksFetched()),
+    return BlocProvider.value(
+      value: context.read<TaskBloc>()..add(const TasksFetched()),
       child: const _DashboardView(),
     );
   }
@@ -96,8 +95,7 @@ class _DashboardViewState extends State<_DashboardView> {
           if (state.status == TaskListStatus.failure && state.tasks.isEmpty) {
             return ErrorView(
               message: state.errorMessage ?? 'Could not load tasks.',
-              onRetry: () =>
-                  context.read<TaskBloc>().add(const TasksFetched()),
+              onRetry: () => context.read<TaskBloc>().add(const TasksFetched()),
             );
           }
           if (state.tasks.isEmpty) {

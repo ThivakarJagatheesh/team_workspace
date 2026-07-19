@@ -1,62 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/constants/app_constants.dart';
+import 'core/di/injection.dart';
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/tasks/presentation/bloc/task_bloc.dart';
 
-/// Root widget. Theme + (later) router are wired here. For now it shows a
-/// placeholder home confirming the scaffold is ready; feature routes are added
-/// during stage-by-stage development.
-class TeamWorkspaceApp extends StatelessWidget {
+class TeamWorkspaceApp extends StatefulWidget {
   const TeamWorkspaceApp({super.key, this.flavor = 'main'});
 
   final String flavor;
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '${AppConstants.appName} (${flavor.toUpperCase()})',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      home: _SetupHomePage(flavor: flavor),
-    );
-  }
+  State<TeamWorkspaceApp> createState() => _TeamWorkspaceAppState();
 }
 
-class _SetupHomePage extends StatelessWidget {
-  const _SetupHomePage({required this.flavor});
+class _TeamWorkspaceAppState extends State<TeamWorkspaceApp> {
+  late final AuthBloc _authBloc;
+  late final TaskBloc _taskBloc;
+  late final AppRouter _router;
 
-  final String flavor;
+  @override
+  void initState() {
+    super.initState();
+    _authBloc = sl<AuthBloc>()..add(const AuthCheckRequested());
+    _taskBloc = sl<TaskBloc>();
+    _router = AppRouter(authBloc: _authBloc);
+  }
+
+  @override
+  void dispose() {
+    _authBloc.close();
+    _taskBloc.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppConstants.appName)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.workspaces_outline, size: 64),
-              const SizedBox(height: 16),
-              Text('Project scaffold ready', style: text.titleLarge),
-              const SizedBox(height: 8),
-              Text(
-                'Clean Architecture · BLoC · GetIt · Dio · Firebase Auth\n'
-                'Features are wired in stage by stage.',
-                textAlign: TextAlign.center,
-                style: text.bodyMedium,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Flavor: ${flavor.toUpperCase()}',
-                style: text.labelLarge,
-              ),
-            ],
-          ),
+    return BlocProvider<AuthBloc>.value(
+      value: _authBloc,
+      child: BlocProvider<TaskBloc>.value(
+        value: _taskBloc,
+        child: MaterialApp.router(
+          title: '${AppConstants.appName} (${widget.flavor.toUpperCase()})',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: ThemeMode.system,
+          routerConfig: _router.router,
         ),
       ),
     );
