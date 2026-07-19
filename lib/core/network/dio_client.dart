@@ -1,0 +1,33 @@
+import 'package:dio/dio.dart';
+
+import '../constants/app_constants.dart';
+
+/// Configured [Dio] instance. Centralises base URL, timeouts and logging so
+/// data sources stay thin.
+class DioClient {
+  DioClient() : dio = Dio(_baseOptions) {
+    dio.interceptors.add(
+      LogInterceptor(
+        requestBody: true,
+        responseBody: false,
+        logPrint: (obj) {
+          // ignore: avoid_print
+          assert(() {
+            // Only logs in debug builds.
+            return true;
+          }());
+        },
+      ),
+    );
+  }
+
+  final Dio dio;
+
+  static final BaseOptions _baseOptions = BaseOptions(
+    baseUrl: AppConstants.baseUrl,
+    connectTimeout: AppConstants.connectTimeout,
+    receiveTimeout: AppConstants.receiveTimeout,
+    responseType: ResponseType.json,
+    headers: {'Content-Type': 'application/json'},
+  );
+}

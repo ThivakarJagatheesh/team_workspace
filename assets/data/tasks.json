@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title": "Design onboarding flow",
+    "description": "Create wireframes and a clickable prototype for the new user onboarding experience.",
+    "priority": "high",
+    "dueDate": "2025-07-05",
+    "status": "in_progress",
+    "assignedTo": "Aarav Mehta"
+  },
+  {
+    "id": 2,
+    "title": "Set up CI pipeline",
+    "description": "Configure GitHub Actions to run analyze + tests on every pull request.",
+    "priority": "medium",
+    "dueDate": "2025-07-02",
+    "status": "pending",
+    "assignedTo": "Diya Sharma"
+  },
+  {
+    "id": 3,
+    "title": "Fix login race condition",
+    "description": "Session token occasionally not persisted when login and app-resume happen together.",
+    "priority": "high",
+    "dueDate": "2025-06-30",
+    "status": "completed",
+    "assignedTo": "Kabir Rao"
+  }
+]
