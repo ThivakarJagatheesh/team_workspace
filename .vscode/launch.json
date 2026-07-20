@@ -20,6 +20,16 @@
         "--flavor",
         "dev"
       ]
+    },
+    {
+      "name": "Flutter: Prod",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main_prod.dart",
+      "args": [
+        "--flavor",
+        "production"
+      ]
     }
   ]
 }
