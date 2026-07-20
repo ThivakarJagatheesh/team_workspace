@@ -39,18 +39,18 @@ class _TeamWorkspaceAppState extends State<TeamWorkspaceApp> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>.value(
-      value: _authBloc,
-      child: BlocProvider<TaskBloc>.value(
-        value: _taskBloc,
-        child: MaterialApp.router(
-          title: '${AppConstants.appName} (${widget.flavor.toUpperCase()})',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: ThemeMode.system,
-          routerConfig: _router.router,
-        ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>.value(value: _authBloc),
+        BlocProvider<TaskBloc>.value(value: _taskBloc),
+      ],
+      child: MaterialApp.router(
+        title: '${AppConstants.appName} (${widget.flavor.toUpperCase()})',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
+        routerConfig: _router.router,
       ),
     );
   }

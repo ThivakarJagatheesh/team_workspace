@@ -58,7 +58,7 @@ class TaskOutboxDataSourceImpl implements TaskOutboxDataSource {
     final ops = _box.values
         .cast<String>()
         .map((raw) =>
-            OutboxOperation.fromMap(jsonDecode(raw) as Map<String, dynamic>))
+            OutboxOperation.fromMap(jsonDecode(raw) as Map<String, dynamic>),)
         .toList()
       ..sort((a, b) => a.enqueuedAt.compareTo(b.enqueuedAt));
     return ops;

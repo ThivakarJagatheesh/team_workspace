@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/di/injection.dart';
+import '../../../../core/router/app_navigator.dart';
 import '../../domain/entities/task_entity.dart';
 import '../cubit/edit_task_cubit.dart';
 import '../widgets/task_form.dart';
@@ -13,15 +13,6 @@ class EditTaskPage extends StatelessWidget {
 
   final TaskEntity task;
 
-  static Route<TaskEntity?> route(TaskEntity task) {
-    return MaterialPageRoute<TaskEntity?>(
-      builder: (_) => BlocProvider(
-        create: (_) => sl<EditTaskCubit>(),
-        child: EditTaskPage(task: task),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +20,7 @@ class EditTaskPage extends StatelessWidget {
       body: BlocConsumer<EditTaskCubit, EditTaskState>(
         listener: (context, state) {
           if (state.status == EditStatus.success) {
-            Navigator.of(context).pop(state.updatedTask);
+            AppNavigator.pop(context, state.updatedTask);
           } else if (state.status == EditStatus.failure) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()

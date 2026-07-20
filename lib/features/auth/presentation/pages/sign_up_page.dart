@@ -8,9 +8,6 @@ import '../widgets/auth_text_field.dart';
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
-  static Route<void> route() =>
-      MaterialPageRoute(builder: (_) => const SignUpPage());
-
   @override
   State<SignUpPage> createState() => _SignUpPageState();
 }
@@ -86,7 +83,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       suffix: IconButton(
                         icon: Icon(_obscure
                             ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined),
+                            : Icons.visibility_outlined,),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                     ),

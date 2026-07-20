@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/router/app_navigator.dart';
 import '../../../../core/utils/validators.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/auth_text_field.dart';
-import 'sign_up_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
-  static Route<void> route() =>
-      MaterialPageRoute(builder: (_) => const LoginPage());
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -64,14 +61,22 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(Icons.workspaces_outline,
-                          size: 56,
-                          color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        Icons.workspaces_outline,
+                        size: 56,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(height: 16),
-                      Text('Welcome back',
-                          style: text.headlineSmall, textAlign: TextAlign.center),
-                      Text('Sign in to your workspace',
-                          style: text.bodyMedium, textAlign: TextAlign.center),
+                      Text(
+                        'Welcome back',
+                        style: text.headlineSmall,
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'Sign in to your workspace',
+                        style: text.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 32),
                       AuthTextField(
                         controller: _email,
@@ -91,9 +96,11 @@ class _LoginPageState extends State<LoginPage> {
                         validator: Validators.password,
                         onSubmitted: (_) => _submit(),
                         suffix: IconButton(
-                          icon: Icon(_obscure
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined),
+                          icon: Icon(
+                            _obscure
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                          ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
@@ -104,7 +111,8 @@ class _LoginPageState extends State<LoginPage> {
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Log in'),
                       ),
@@ -116,8 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                           TextButton(
                             onPressed: loading
                                 ? null
-                                : () => Navigator.of(context)
-                                    .push(SignUpPage.route()),
+                                : () => AppNavigator.go(context, '/sign-up'),
                             child: const Text('Sign up'),
                           ),
                         ],

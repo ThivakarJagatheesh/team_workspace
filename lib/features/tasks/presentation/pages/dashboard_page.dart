@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/router/app_navigator.dart';
 import '../../../../core/widgets/app_state_views.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/entities/task_entity.dart';
 import '../bloc/task_bloc.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_filter_bar.dart';
-import 'create_task_page.dart';
-import 'task_details_page.dart';
 
 /// Tasks dashboard: paginated, infinite-scroll list with pull-to-refresh and
 /// graceful loading / empty / error states.
@@ -54,7 +53,7 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   Future<void> _openCreate() async {
-    final created = await Navigator.of(context).push(CreateTaskPage.route());
+    final created = await AppNavigator.push<TaskEntity?>(context, '/tasks/new');
     if (created != null && mounted) {
       context.read<TaskBloc>().add(TaskInserted(created));
     }
@@ -166,8 +165,7 @@ class _TaskList extends StatelessWidget {
           final task = tasks[index];
           return TaskCard(
             task: task,
-            onTap: () => Navigator.of(context)
-                .push(TaskDetailsPage.route(context, task.id)),
+            onTap: () => AppNavigator.push(context, '/tasks/${task.id}'),
           );
         },
       ),

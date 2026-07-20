@@ -109,7 +109,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     emit(state.copyWith(
       statusFilter: event.status,
       priorityFilter: event.priority,
-    ));
+    ),);
   }
 
   Future<void> _onRefreshed(

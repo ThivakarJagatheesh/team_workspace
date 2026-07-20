@@ -59,7 +59,7 @@ void main() {
       when(() => remote.getTasks(
             page: any(named: 'page'),
             limit: any(named: 'limit'),
-          )).thenAnswer((_) async => tTaskModels(3));
+          ),).thenAnswer((_) async => tTaskModels(3));
       when(() => local.cacheTasks(any())).thenAnswer((_) async {});
 
       final result = await repo.getTasks(page: 1, limit: 15);
@@ -79,7 +79,7 @@ void main() {
       verifyNever(() => remote.getTasks(
             page: any(named: 'page'),
             limit: any(named: 'limit'),
-          ));
+          ),);
     });
 
     test('returns NetworkFailure when offline with no cache (page 2)',

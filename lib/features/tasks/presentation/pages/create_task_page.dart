@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/di/injection.dart';
+import '../../../../core/router/app_navigator.dart';
 import '../../domain/entities/task_entity.dart';
 import '../cubit/create_task_cubit.dart';
 import '../widgets/task_form.dart';
@@ -11,23 +11,15 @@ import '../widgets/task_form.dart';
 class CreateTaskPage extends StatelessWidget {
   const CreateTaskPage({super.key});
 
-  static Route<TaskEntity?> route() {
-    return MaterialPageRoute<TaskEntity?>(
-      builder: (_) => BlocProvider(
-        create: (_) => sl<CreateTaskCubit>(),
-        child: const CreateTaskPage(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New task'), leading: const CloseButton()),
+      appBar:
+          AppBar(title: const Text('New task'), leading: const CloseButton()),
       body: BlocConsumer<CreateTaskCubit, CreateTaskState>(
         listener: (context, state) {
           if (state.status == FormStatus.success) {
-            Navigator.of(context).pop(state.createdTask);
+            AppNavigator.pop(context, state.createdTask);
           } else if (state.status == FormStatus.failure) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()

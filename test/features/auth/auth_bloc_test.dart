@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:team_workspace/core/error/failures.dart';
 import 'package:team_workspace/core/usecase/usecase.dart';
 import 'package:team_workspace/features/auth/domain/entities/user_entity.dart';
+import 'package:team_workspace/features/auth/domain/params/auth_params.dart';
 import 'package:team_workspace/features/auth/domain/usecases/get_current_user.dart';
 import 'package:team_workspace/features/auth/domain/usecases/login.dart';
 import 'package:team_workspace/features/auth/domain/usecases/logout.dart';

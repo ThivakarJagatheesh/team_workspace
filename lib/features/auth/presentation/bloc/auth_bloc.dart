@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/params/auth_params.dart';
 import '../../domain/usecases/get_current_user.dart';
 import '../../domain/usecases/login.dart';
 import '../../domain/usecases/logout.dart';
@@ -35,7 +36,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final Logout _logout;
   final GetCurrentUser _getCurrentUser;
 
-  Future<void> _onCheck(AuthCheckRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onCheck(
+      AuthCheckRequested event, Emitter<AuthState> emit,) async {
     final result = await _getCurrentUser(const NoParams());
     result.fold(
       (_) => emit(const AuthState.unauthenticated()),

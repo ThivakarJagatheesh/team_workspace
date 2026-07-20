@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/router/app_navigator.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/task_entity.dart';
 import '../bloc/task_bloc.dart';
 import '../widgets/task_badges.dart';
-import 'edit_task_page.dart';
 
 /// Full task view. Reads the live task from [TaskBloc] by id, so a status
 /// toggle here (or on the list) is reflected immediately and consistently.
@@ -13,18 +13,6 @@ class TaskDetailsPage extends StatelessWidget {
   const TaskDetailsPage({super.key, required this.taskId});
 
   final int taskId;
-
-  /// Pushes the details route while re-using the caller's [TaskBloc] instance
-  /// (so both screens share one source of truth).
-  static Route<void> route(BuildContext context, int taskId) {
-    final bloc = context.read<TaskBloc>();
-    return MaterialPageRoute(
-      builder: (_) => BlocProvider.value(
-        value: bloc,
-        child: TaskDetailsPage(taskId: taskId),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +30,11 @@ class TaskDetailsPage extends StatelessWidget {
                 icon: const Icon(Icons.edit_outlined),
                 onPressed: () async {
                   final bloc = context.read<TaskBloc>();
-                  final updated =
-                      await Navigator.of(context).push(EditTaskPage.route(task));
+                  final updated = await AppNavigator.push<TaskEntity?>(
+                    context,
+                    '/tasks/${task.id}/edit',
+                    extra: task,
+                  );
                   if (updated != null) bloc.add(TaskUpdated(updated));
                 },
               );
@@ -151,10 +142,12 @@ class _Field extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: text.labelMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    )),
+                Text(
+                  label,
+                  style: text.labelMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(value, style: text.bodyLarge),
               ],
