@@ -5,6 +5,7 @@ import 'core/constants/app_constants.dart';
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_controller.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/tasks/presentation/bloc/task_bloc.dart';
 
@@ -21,6 +22,7 @@ class _TeamWorkspaceAppState extends State<TeamWorkspaceApp> {
   late final AuthBloc _authBloc;
   late final TaskBloc _taskBloc;
   late final AppRouter _router;
+  var _isDarkMode = false;
 
   @override
   void initState() {
@@ -37,20 +39,30 @@ class _TeamWorkspaceAppState extends State<TeamWorkspaceApp> {
     super.dispose();
   }
 
+  void _toggleTheme() {
+    setState(() => _isDarkMode = !_isDarkMode);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = _isDarkMode ? AppTheme.dark : AppTheme.light;
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: _authBloc),
         BlocProvider<TaskBloc>.value(value: _taskBloc),
       ],
-      child: MaterialApp.router(
-        title: '${AppConstants.appName} (${widget.flavor.toUpperCase()})',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
-        routerConfig: _router.router,
+      child: ThemeModeController(
+        isDarkMode: _isDarkMode,
+        toggleTheme: _toggleTheme,
+        child: MaterialApp.router(
+          title: '${AppConstants.appName} (${widget.flavor.toUpperCase()})',
+          debugShowCheckedModeBanner: false,
+          theme: theme,
+          darkTheme: AppTheme.dark,
+          themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          routerConfig: _router.router,
+        ),
       ),
     );
   }

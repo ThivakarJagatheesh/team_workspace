@@ -20,25 +20,30 @@ class TaskDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Task details'),
         actions: [
-          BlocBuilder<TaskBloc, TaskState>(
-            builder: (context, state) {
-              final matches = state.tasks.where((t) => t.id == taskId);
-              if (matches.isEmpty) return const SizedBox.shrink();
-              final task = matches.first;
-              return IconButton(
-                tooltip: 'Edit',
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () async {
-                  final bloc = context.read<TaskBloc>();
-                  final updated = await AppNavigator.push<TaskEntity?>(
-                    context,
-                    '/tasks/${task.id}/edit',
-                    extra: task,
-                  );
-                  if (updated != null) bloc.add(TaskUpdated(updated));
-                },
-              );
-            },
+          BlocProvider.value(
+            value: context.read<TaskBloc>(),
+            child: BlocBuilder<TaskBloc, TaskState>(
+              builder: (context, state) {
+                final matches = state.tasks.where((t) => t.id == taskId);
+                if (matches.isEmpty) return const SizedBox.shrink();
+                final task = matches.first;
+                return IconButton(
+                  tooltip: 'Edit',
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () async {
+                    final bloc = context.read<TaskBloc>();
+                    final updatedTask = await AppNavigator.push<TaskEntity?>(
+                      context,
+                      '/tasks/${task.id}/edit',
+                      extra: task,
+                    );
+                    if (updatedTask != null) {
+                      bloc.add(TaskUpdated(updatedTask));
+                    }
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),

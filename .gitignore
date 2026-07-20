@@ -46,4 +46,6 @@ app.*.map.json
 /android/app/release
 windows/flutter/generated_plugins.cmake
 lib/firebase_options.dart.example
+.env
+.env.*
 

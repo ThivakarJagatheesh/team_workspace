@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_navigator.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_mode_controller.dart';
+import '../../../../core/utils/dialogs.dart';
 import '../../../../core/widgets/app_state_views.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/entities/task_entity.dart';
@@ -53,7 +56,7 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   Future<void> _openCreate() async {
-    final created = await AppNavigator.push<TaskEntity?>(context, '/tasks/new');
+    final created = await AppNavigator.push<TaskEntity?>(context, '/tasks');
     if (created != null && mounted) {
       context.read<TaskBloc>().add(TaskInserted(created));
     }
@@ -67,61 +70,104 @@ class _DashboardViewState extends State<_DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppConstants.appName),
-        actions: [
-          IconButton(
-            tooltip: 'Log out',
-            icon: const Icon(Icons.logout),
-            onPressed: () =>
-                context.read<AuthBloc>().add(const AuthLogoutRequested()),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openCreate,
-        icon: const Icon(Icons.add),
-        label: const Text('New task'),
-      ),
-      body: BlocBuilder<TaskBloc, TaskState>(
-        builder: (context, state) {
-          // First load / hard failure states own the whole screen.
-          if (state.status == TaskListStatus.initial ||
-              state.status == TaskListStatus.loading) {
-            return const LoadingView(message: 'Loading tasks…');
-          }
-          if (state.status == TaskListStatus.failure && state.tasks.isEmpty) {
-            return ErrorView(
-              message: state.errorMessage ?? 'Could not load tasks.',
-              onRetry: () => context.read<TaskBloc>().add(const TasksFetched()),
-            );
-          }
-          if (state.tasks.isEmpty) {
-            return const EmptyView(message: 'No tasks yet');
-          }
+    final currentUser = context.select<AuthBloc, String?>(
+      (bloc) => bloc.state.user?.email,
+    );
 
-          // Loaded: search/filter bar + the filtered list.
-          final filtered = state.filteredTasks;
-          return Column(
+    final controller = ThemeModeController.of(context);
+    final theme = controller.isDarkMode ? AppTheme.dark : AppTheme.light;
+
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(AppConstants.appName),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
             children: [
-              const TaskFilterBar(),
-              Expanded(
-                child: filtered.isEmpty
-                    ? const EmptyView(
-                        message: 'No tasks match your search / filters',
-                        icon: Icons.search_off,
-                      )
-                    : _TaskList(
-                        scrollController: _scrollController,
-                        tasks: filtered,
-                        showLoader:
-                            !state.hasReachedMax && !state.hasActiveFilters,
-                      ),
+              UserAccountsDrawerHeader(
+                accountName: const Text('Team Workspace User'),
+                accountEmail: Text(currentUser ?? 'Signed out'),
+                currentAccountPicture: const CircleAvatar(
+                  child: Icon(Icons.person_outline),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('User'),
+                subtitle: Text(currentUser ?? 'No account selected'),
+              ),
+              const Divider(),
+              SwitchListTile.adaptive(
+                value: controller.isDarkMode,
+                onChanged: (_) => controller.toggleTheme(),
+                secondary: const Icon(Icons.dark_mode_outlined),
+                title: const Text('Dark mode'),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: () async {
+                  AppNavigator.pop(context);
+                  final confirmed = await AppDialogs.confirm(
+                    context,
+                    title: 'Log out',
+                    message: 'Are you sure you want to log out?',
+                    confirmText: 'Logout',
+                  );
+                  if (confirmed && context.mounted) {
+                    context.read<AuthBloc>().add(const AuthLogoutRequested());
+                  }
+                },
               ),
             ],
-          );
-        },
+          ),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _openCreate,
+          icon: const Icon(Icons.add),
+          label: const Text('New task'),
+        ),
+        body: BlocBuilder<TaskBloc, TaskState>(
+          builder: (context, state) {
+            if (state.status == TaskListStatus.initial ||
+                state.status == TaskListStatus.loading) {
+              return const LoadingView(message: 'Loading tasks…');
+            }
+            if (state.status == TaskListStatus.failure && state.tasks.isEmpty) {
+              return ErrorView(
+                message: state.errorMessage ?? 'Could not load tasks.',
+                onRetry: () => context.read<TaskBloc>().add(const TasksFetched()),
+              );
+            }
+            if (state.tasks.isEmpty) {
+              return const EmptyView(message: 'No tasks yet');
+            }
+
+            final filtered = state.filteredTasks;
+            return Column(
+              children: [
+                const TaskFilterBar(),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? const EmptyView(
+                          message: 'No tasks match your search / filters',
+                          icon: Icons.search_off,
+                        )
+                      : _TaskList(
+                          scrollController: _scrollController,
+                          tasks: filtered,
+                          showLoader:
+                              !state.hasReachedMax && !state.hasActiveFilters,
+                        ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

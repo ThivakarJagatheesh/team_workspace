@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:team_workspace/core/router/app_navigator.dart';
 
 import '../../../../core/utils/validators.dart';
 import '../bloc/auth_bloc.dart';
@@ -109,6 +110,18 @@ class _SignUpPageState extends State<SignUpPage> {
                             )
                           : const Text('Create account'),
                     ),
+                     Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Already have an account?"),
+                          TextButton(
+                            onPressed: loading
+                                ? null
+                                : () => AppNavigator.go(context, '/login'),
+                            child: const Text('Sign in'),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
