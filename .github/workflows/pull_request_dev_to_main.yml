@@ -1,4 +1,4 @@
-name: Build and distribute Android APK
+name: Build and distribute Production APK
 
 on:
   pull_request:
@@ -40,24 +40,24 @@ jobs:
 
       - name: Create .env file
         run: |
-          cat > .env <<'EOF'
+          cat > .env <<EOF
           DEV_BASE_URL=${{ secrets.DEV_BASE_URL }}
           PROD_BASE_URL=${{ secrets.PROD_BASE_URL }}
           TASKS_ENDPOINT=${{ secrets.TASKS_ENDPOINT }}
           EOF
 
-      - name: Restore Google services config
+      - name: Restore google-services.json
         run: |
-          mkdir -p android/app
-          echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          mkdir -p android/app/src/prod
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/src/prod/google-services.json
 
-      - name: Build debug APK for dev flavor
-        run: flutter build apk --flavor dev -t lib/main_dev.dart
+      - name: Build Production Release APK
+        run: flutter build apk --release --flavor prod -t lib/main_prod.dart
 
-      - name: Upload to Firebase App Distribution
+      - name: Upload APK to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           groups: ${{ secrets.FIREBASE_DISTRIBUTION_GROUP }}
-          file: build/app/outputs/flutter-apk/app-dev-release.apk
+          file: build/app/outputs/flutter-apk/app-prod-release.apk
