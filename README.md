@@ -4,7 +4,7 @@ Team Workspace is a Flutter application for managing tasks with authentication, 
 
 ## Setup instructions
 
-1. Install Flutter SDK 3.5+ and ensure the Flutter toolchain is available on your PATH.
+1. Install Flutter SDK 3.24.0 and ensure the Flutter toolchain is available on your PATH.
 2. From the project root, install dependencies:
    - `flutter pub get`
 3. Create or update the environment file used by the app:
