@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../config/flavor.dart';
 import '../constants/app_constants.dart';
-import 'app_interceptors.dart';
+import 'retry_interceptor.dart';
+import 'token_refresh_interceptor.dart';
 
 /// Configured [Dio] instance. Centralises base URL, timeouts and logging so
 /// data sources stay thin.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:team_workspace/features/tasks/presentation/cubit/edit_task_cubit.dart';
 
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -54,14 +55,21 @@ class AppRouter {
         builder: (context, state) {
           final taskId = int.tryParse(state.pathParameters['taskId'] ?? '');
           final task = state.extra;
+
           if (taskId == null || task is! TaskEntity) {
-            return const Scaffold(body: Center(child: Text('Invalid task')));
+            return const Scaffold(
+              body: Center(child: Text('Invalid task')),
+            );
           }
-          return EditTaskPage(task: task);
+
+          return BlocProvider(
+            create: (_) => sl<EditTaskCubit>(),
+            child: EditTaskPage(task: task),
+          );
         },
       ),
       GoRoute(
-        path: '/tasks/new',
+        path: '/tasks',
         builder: (context, state) {
           return BlocProvider(
             create: (_) => sl<CreateTaskCubit>(),

@@ -1,3 +1,5 @@
+import '../env/env.dart';
+
 /// App-wide constants. Keep secrets OUT of here — use env / Firebase config.
 class AppConstants {
   AppConstants._();
@@ -7,8 +9,8 @@ class AppConstants {
   // ── API ──────────────────────────────────────────────────
   // A public mock REST API that supports ?_page=&_limit= pagination.
   // Swap for your own endpoint if needed.
-  static const String baseUrl = 'https://jsonplaceholder.typicode.com';
-  static const String tasksEndpoint = '/todos';
+  static String baseUrl = Env.devBaseUrl;
+  static String tasksEndpoint = Env.tasksEndpoint;
   static const int pageSize = 15;
 
   static const Duration connectTimeout = Duration(seconds: 15);
