@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1079936472300",
+    "project_id": "teamworkspace-afeda",
+    "storage_bucket": "teamworkspace-afeda.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1079936472300:android:b105190123d0a8fa8dc1c9",
+        "android_client_info": {
+          "package_name": "com.example.team_workspace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdWHUESgRj3VnnoUwPwQdF6ObEMNYo5ig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1079936472300:android:8a2c286f1df5265a8dc1c9",
+        "android_client_info": {
+          "package_name": "com.example.team_workspace_dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdWHUESgRj3VnnoUwPwQdF6ObEMNYo5ig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
