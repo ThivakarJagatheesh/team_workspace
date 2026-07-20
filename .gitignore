@@ -46,6 +46,11 @@ app.*.map.json
 /android/app/release
 windows/flutter/generated_plugins.cmake
 lib/firebase_options.dart.example
+lib/firebase_options.dart
 .env
 .env.*
+**/GoogleService-Info.plist
+android/app/google-services.json
+android/app/src/dev/google-services.json
+android/app/src/prod/google-services.json
 
